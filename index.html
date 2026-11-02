@@ -1,0 +1,166 @@
+<div class="game">
+  <h1>🦖 DINO RUNNER</h1>
+  <div class="score">Score: <span id="score">0</span></div>
+
+  <div id="arena">
+    <div id="dino">🦖</div>
+    <div id="cactus">🌵</div>
+    <div id="message">Press START to play!</div>
+  </div>
+
+  <button id="start">▶ START GAME</button>
+  <button id="jump">⬆ JUMP</button>
+  <p>Press SPACE or tap JUMP to avoid obstacles!</p>
+</div>body {
+  background: #e6f3df;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.game {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 20px;
+}
+
+h1 {
+  color: #28643a;
+}
+
+#arena {
+  height: 230px;
+  background: #dff1d3;
+  border-bottom: 5px solid #537b42;
+  position: relative;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+#dino {
+  position: absolute;
+  bottom: 0;
+  left: 55px;
+  font-size: 42px;
+}
+
+#cactus {
+  position: absolute;
+  bottom: 0;
+  right: -50px;
+  font-size: 40px;
+}
+
+#message {
+  position: absolute;
+  top: 35px;
+  width: 100%;
+  font-weight: bold;
+  color: #345b3d;
+}
+
+button {
+  padding: 13px 24px;
+  background: #28643a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  margin: 5px;
+  cursor: pointer;
+}const dino = document.getElementById("dino");
+const cactus = document.getElementById("cactus");
+const message = document.getElementById("message");
+const scoreText = document.getElementById("score");
+
+let playing = false;
+let jumping = false;
+let score = 0;
+let cactusX = 550;
+let dinoY = 0;
+let speed = 5;
+let timer;
+
+function startGame() {
+  clearInterval(timer);
+  playing = true;
+  score = 0;
+  speed = 5;
+  cactusX = 550;
+  dinoY = 0;
+
+  cactus.style.right = "auto";
+  cactus.style.left = cactusX + "px";
+  dino.style.bottom = "0px";
+  message.textContent = "";
+
+  timer = setInterval(update, 20);
+}
+
+function update() {
+  if (!playing) return;
+
+  cactusX -= speed;
+
+  if (cactusX < -50) {
+    cactusX = 550;
+    score++;
+    scoreText.textContent = score;
+    speed = Math.min(10, 5 + score * 0.15);
+  }
+
+  cactus.style.left = cactusX + "px";
+
+  if (
+    cactusX < 100 &&
+    cactusX > 35 &&
+    dinoY < 35
+  ) {
+    gameOver();
+  }
+}
+
+function jump() {
+  if (!playing || jumping) return;
+
+  jumping = true;
+  let height = 0;
+
+  const jumpTimer = setInterval(() => {
+    height += 7;
+    dinoY = height;
+    dino.style.bottom = height + "px";
+
+    if (height >= 105) {
+      clearInterval(jumpTimer);
+
+      const fall = setInterval(() => {
+        height -= 7;
+        dinoY = Math.max(0, height);
+        dino.style.bottom = dinoY + "px";
+
+        if (height <= 0) {
+          clearInterval(fall);
+          jumping = false;
+        }
+      }, 20);
+    }
+  }, 20);
+}
+
+function gameOver() {
+  playing = false;
+  clearInterval(timer);
+  message.textContent = "💥 GAME OVER! Score: " + score;
+}
+
+document.getElementById("start").onclick = startGame;
+document.getElementById("jump").onclick = jump;
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" || e.code === "ArrowUp") {
+    e.preventDefault();
+    jump();
+  }
+});
